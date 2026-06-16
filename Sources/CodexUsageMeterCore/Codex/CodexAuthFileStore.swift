@@ -1,7 +1,14 @@
 import Foundation
 
-public enum CodexAuthFileStoreError: Error, Equatable {
+public enum CodexAuthFileStoreError: LocalizedError, Equatable {
     case notFound(URL)
+
+    public var errorDescription: String? {
+        switch self {
+        case let .notFound(url):
+            return "未找到 Codex 登录文件：\(url.path)。请先运行 codex 登录。"
+        }
+    }
 }
 
 public struct CodexAuthFileStore {

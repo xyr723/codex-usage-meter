@@ -3,11 +3,16 @@ import Foundation
 public enum CodexQuotaRequestBuilder {
     public static let endpoint = URL(string: "https://chatgpt.com/backend-api/wham/usage")!
 
-    public static func request(credentials: CodexCredentials) -> URLRequest {
+    public static func request(
+        credentials: CodexCredentials,
+        endpoint: URL = endpoint
+    ) -> URLRequest {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "GET"
+        request.timeoutInterval = 15
         request.setValue("Bearer \(credentials.accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("codex-cli", forHTTPHeaderField: "User-Agent")
 
         if let accountID = credentials.accountID {
             request.setValue(accountID, forHTTPHeaderField: "ChatGPT-Account-Id")
@@ -17,8 +22,30 @@ public enum CodexQuotaRequestBuilder {
     }
 }
 
-public enum CodexQuotaError: Error, Equatable {
+public enum CodexQuotaEndpointResolver {
+    public static func endpoint(
+        environment: [String: String] = ProcessInfo.processInfo.environment
+    ) -> URL {
+        if let value = environment["CODEX_USAGE_URL"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !value.isEmpty,
+           let url = URL(string: value)
+        {
+            return url
+        }
+
+        return CodexQuotaRequestBuilder.endpoint
+    }
+}
+
+public enum CodexQuotaError: LocalizedError, Equatable {
     case invalidJSON
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidJSON:
+            return "Codex 精确额度接口返回了无法解析的数据。"
+        }
+    }
 }
 
 public enum CodexQuotaDecoder {

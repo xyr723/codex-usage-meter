@@ -62,6 +62,14 @@ Codex  5h 62%  7d 41%  Sync 2m
 
 如果还没有成功拿到精确接口数据，会显示 `--%`，不会用估算值冒充额度。
 
+如果当前网络不能直连 `https://chatgpt.com/backend-api/wham/usage`，可以用完整精确接口地址覆盖：
+
+```bash
+CODEX_USAGE_URL="https://your-proxy.example/backend-api/wham/usage" swift run CodexUsageMeter
+```
+
+这个地址必须返回和 Codex `wham/usage` 一致的 JSON；应用不会从非精确来源估算 5 小时或 7 天额度。
+
 ## 模块
 
 - `CodexUsageMeterCore`: 精确额度、token 扫描、模型、格式化和 Provider 协议。

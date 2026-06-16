@@ -49,3 +49,27 @@ import Testing
     #expect(request.value(forHTTPHeaderField: "ChatGPT-Account-Id") == "account-id")
     #expect(request.value(forHTTPHeaderField: "Accept") == "application/json")
 }
+
+@Test func codexQuotaRequestCanUseConfiguredExactUsageEndpoint() throws {
+    let credentials = CodexCredentials(
+        accessToken: "access-token",
+        refreshToken: nil,
+        accountID: nil,
+        lastRefresh: nil)
+    let endpoint = URL(string: "https://proxy.example.test/backend-api/wham/usage")!
+
+    let request = CodexQuotaRequestBuilder.request(
+        credentials: credentials,
+        endpoint: endpoint)
+
+    #expect(request.url == endpoint)
+    #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer access-token")
+}
+
+@Test func codexQuotaEndpointResolverReadsFullUsageURLFromEnvironment() throws {
+    let endpoint = CodexQuotaEndpointResolver.endpoint(environment: [
+        "CODEX_USAGE_URL": "https://proxy.example.test/backend-api/wham/usage",
+    ])
+
+    #expect(endpoint.absoluteString == "https://proxy.example.test/backend-api/wham/usage")
+}

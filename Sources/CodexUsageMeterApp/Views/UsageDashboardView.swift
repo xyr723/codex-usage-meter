@@ -26,11 +26,25 @@ struct UsageDashboardView: View {
 
     private var providerTabs: some View {
         HStack(spacing: 0) {
-            DashboardTab(icon: "brain.head.profile", title: "Codex", selected: true)
+            ForEach(Array(viewModel.availableProviders.enumerated()), id: \.element.id) { index, provider in
+                if index > 0 {
+                    Divider().frame(height: 22)
+                }
+
+                DashboardTab(
+                    icon: provider.systemImageName,
+                    title: provider.displayName,
+                    selected: viewModel.selectedProviderID == provider.id,
+                    enabled: provider.isImplemented,
+                    action: { viewModel.selectProvider(provider.id) })
+            }
             Divider().frame(height: 22)
-            DashboardTab(icon: "sparkles", title: "Claude", selected: false)
-            Divider().frame(height: 22)
-            DashboardTab(icon: "ellipsis", title: "More", selected: false)
+            DashboardTab(
+                icon: "ellipsis",
+                title: "More",
+                selected: false,
+                enabled: false,
+                action: {})
         }
         .padding(4)
         .background(Color.white.opacity(0.48))
@@ -108,17 +122,17 @@ struct UsageDashboardView: View {
                 Button {
                     viewModel.refresh()
                 } label: {
-                    Label(viewModel.isLoading ? "Refreshing" : "Refresh", systemImage: "arrow.clockwise")
+                    Label(viewModel.isLoading ? "刷新中" : "刷新", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(DashboardButtonStyle())
 
                 Button(action: toggleFloatingBall) {
-                    Label("Floating", systemImage: "circle.dotted")
+                    Label("悬浮球", systemImage: "circle.dotted")
                 }
                 .buttonStyle(DashboardButtonStyle())
 
                 Button {} label: {
-                    Label("Settings", systemImage: "gearshape")
+                    Label("设置", systemImage: "gearshape")
                 }
                 .buttonStyle(DashboardButtonStyle())
             }
@@ -141,18 +155,25 @@ private struct DashboardTab: View {
     let icon: String
     let title: String
     let selected: Bool
+    let enabled: Bool
+    let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-            Text(title)
-                .fontWeight(.semibold)
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                Text(title)
+                    .fontWeight(.semibold)
+            }
+            .font(.system(size: 17))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .foregroundStyle(enabled || selected ? Color.primary : Color.secondary)
+            .background(selected ? Color.black.opacity(0.06) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
-        .font(.system(size: 17))
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 9)
-        .background(selected ? Color.black.opacity(0.06) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .buttonStyle(.plain)
+        .help(enabled ? title : "\(title) 暂未接入")
     }
 }
 
@@ -201,7 +222,9 @@ private struct DashboardButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(size: 14, weight: .medium))
             .labelStyle(.titleAndIcon)
-            .frame(maxWidth: .infinity)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .frame(minWidth: 92, maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(Color.white.opacity(configuration.isPressed ? 0.55 : 0.42))
             .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))

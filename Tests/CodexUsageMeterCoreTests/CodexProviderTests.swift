@@ -119,6 +119,29 @@ import Testing
     #expect(snapshot.todayTokens.totalTokens == 1_230)
 }
 
+@Test func codexUsageProviderKeepsLocalTokensWhenExactQuotaFetchFails() async throws {
+    let credentials = CodexCredentials(
+        accessToken: "access",
+        refreshToken: nil,
+        accountID: nil,
+        lastRefresh: Date(timeIntervalSince1970: 1_781_568_000))
+    let provider = CodexUsageProvider(
+        loadCredentials: { credentials },
+        saveCredentials: { _ in },
+        refreshCredentials: { $0 },
+        fetchQuotaData: { _ in throw CodexQuotaHTTPError.network("timeout") },
+        scanTokens: { _ in
+            TokenUsageSummary(inputTokens: 1_000, cachedInputTokens: 200, outputTokens: 30)
+        })
+
+    let snapshot = try await provider.snapshot(now: Date(timeIntervalSince1970: 1_781_568_000))
+
+    #expect(snapshot.fiveHourWindow == nil)
+    #expect(snapshot.weeklyWindow == nil)
+    #expect(snapshot.todayTokens.totalTokens == 1_230)
+    #expect(snapshot.syncState == .failed)
+}
+
 @Test func codexAuthFileStoreRespectsCodexHome() throws {
     let codexHome = try makeTemporaryProviderCodexHome()
     let authURL = codexHome.appendingPathComponent("auth.json")

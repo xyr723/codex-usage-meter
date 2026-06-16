@@ -29,6 +29,8 @@ Expected response fields:
 
 The normalizer maps windows by `limit_window_seconds`, not by field order alone.
 
+If the host network cannot reach the default endpoint, set `CODEX_USAGE_URL` to a full compatible `wham/usage` URL. This is intended for local or corporate proxy setups and still requires the exact Codex usage response shape.
+
 ## Token Refresh
 
 If `last_refresh` is older than 8 days, refresh the OAuth token through:

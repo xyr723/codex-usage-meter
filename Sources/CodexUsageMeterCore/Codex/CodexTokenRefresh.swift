@@ -12,10 +12,21 @@ public enum CodexTokenRefreshPolicy {
     }
 }
 
-public enum CodexTokenRefreshError: Error, Equatable {
+public enum CodexTokenRefreshError: LocalizedError, Equatable {
     case missingRefreshToken
     case invalidJSON
     case failed(statusCode: Int)
+
+    public var errorDescription: String? {
+        switch self {
+        case .missingRefreshToken:
+            return "Codex 登录文件缺少 refresh token，请重新登录 codex。"
+        case .invalidJSON:
+            return "Codex token refresh 返回了无法解析的数据。"
+        case let .failed(statusCode):
+            return "Codex token refresh 失败：HTTP \(statusCode)。"
+        }
+    }
 }
 
 public enum CodexTokenRefreshRequestBuilder {

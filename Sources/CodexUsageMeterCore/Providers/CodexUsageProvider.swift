@@ -25,20 +25,29 @@ public struct CodexUsageProvider: UsageProvider, @unchecked Sendable {
 
     public static func live(
         codexHome: URL = CodexAuthFileStore.defaultCodexHome(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        environment: [String: String] = ProcessInfo.processInfo.environment
     ) -> CodexUsageProvider {
         let authStore = CodexAuthFileStore(codexHome: codexHome)
         let tokenScanner = CodexTokenScanner(codexHome: codexHome, calendar: calendar)
         let httpClient = URLSessionHTTPClient()
         let tokenRefresher = CodexTokenRefresher(performRequest: httpClient.data)
+        let quotaEndpoint = CodexQuotaEndpointResolver.endpoint(environment: environment)
 
         return CodexUsageProvider(
             loadCredentials: authStore.load,
             saveCredentials: { try authStore.save($0) },
             refreshCredentials: { try await tokenRefresher.refresh($0) },
             fetchQuotaData: { credentials in
-                let request = CodexQuotaRequestBuilder.request(credentials: credentials)
-                let response = try await httpClient.data(for: request)
+                let request = CodexQuotaRequestBuilder.request(
+                    credentials: credentials,
+                    endpoint: quotaEndpoint)
+                let response: HTTPDataResponse
+                do {
+                    response = try await httpClient.data(for: request)
+                } catch {
+                    throw CodexQuotaHTTPError.network(error.localizedDescription)
+                }
                 guard response.statusCode == 200 else {
                     throw CodexQuotaHTTPError.failed(statusCode: response.statusCode)
                 }
@@ -59,16 +68,36 @@ public struct CodexUsageProvider: UsageProvider, @unchecked Sendable {
         }
 
         let todayTokens = try scanTokens(now)
-        let quotaData = try await fetchQuotaData(credentials)
-
-        return try CodexQuotaDecoder.snapshot(
-            from: quotaData,
-            todayTokens: todayTokens,
-            syncedAt: now,
-            now: now)
+        do {
+            let quotaData = try await fetchQuotaData(credentials)
+            return try CodexQuotaDecoder.snapshot(
+                from: quotaData,
+                todayTokens: todayTokens,
+                syncedAt: now,
+                now: now)
+        } catch {
+            return ProviderUsageSnapshot(
+                provider: .codex,
+                fiveHourWindow: nil,
+                weeklyWindow: nil,
+                todayTokens: todayTokens,
+                syncedAt: now,
+                now: now,
+                syncState: .failed)
+        }
     }
 }
 
-public enum CodexQuotaHTTPError: Error, Equatable {
+public enum CodexQuotaHTTPError: LocalizedError, Equatable {
     case failed(statusCode: Int)
+    case network(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case let .failed(statusCode):
+            return "Codex 精确额度接口请求失败：HTTP \(statusCode)。"
+        case let .network(message):
+            return "Codex 精确额度接口网络不可达：\(message)。"
+        }
+    }
 }
