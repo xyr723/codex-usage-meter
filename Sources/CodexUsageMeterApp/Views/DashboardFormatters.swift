@@ -2,6 +2,15 @@ import CodexUsageMeterCore
 import Foundation
 
 enum DashboardFormatters {
+    struct ResetTimeItem: Equatable {
+        let title: String
+        let date: Date?
+
+        var text: String {
+            DashboardFormatters.resetText(date)
+        }
+    }
+
     static func tokenText(_ summary: TokenUsageSummary?) -> String {
         guard let summary else {
             return "--"
@@ -21,6 +30,13 @@ enum DashboardFormatters {
             return "--%"
         }
         return "\(value)%"
+    }
+
+    static func resetTimeItems(fiveHour: QuotaWindow?, weekly: QuotaWindow?) -> [ResetTimeItem] {
+        [
+            ResetTimeItem(title: "5小时", date: fiveHour?.resetAt),
+            ResetTimeItem(title: "7天", date: weekly?.resetAt),
+        ]
     }
 
     static func resetText(_ date: Date?) -> String {

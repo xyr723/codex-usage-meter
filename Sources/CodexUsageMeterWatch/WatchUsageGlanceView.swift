@@ -23,14 +23,9 @@ public struct WatchUsageGlanceView: View {
             Text("今日 Token")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text(tokenText)
-                    .font(.title3.bold())
-                    .foregroundStyle(.blue)
-                Text("/ 2.00M")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Text(tokenText)
+                .font(.title3.bold())
+                .foregroundStyle(.blue)
 
             HStack(alignment: .top, spacing: 10) {
                 VStack(spacing: 6) {

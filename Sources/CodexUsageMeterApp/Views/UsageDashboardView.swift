@@ -64,15 +64,29 @@ struct UsageDashboardView: View {
 
             Divider()
 
-            HStack(spacing: 8) {
-                Image(systemName: "clock")
-                    .font(.system(size: 14))
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 14))
+                    Text("重置时间")
+                }
+                .foregroundStyle(.secondary)
+
+                ForEach(
+                    DashboardFormatters.resetTimeItems(
+                        fiveHour: snapshot?.fiveHourWindow,
+                        weekly: snapshot?.weeklyWindow),
+                    id: \.title
+                ) { item in
+                    HStack(spacing: 8) {
+                        Text(item.title)
+                            .frame(width: 42, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Text(item.text)
+                            .fontWeight(.medium)
+                    }
                     .foregroundStyle(.secondary)
-                Text("重置时间")
-                    .foregroundStyle(.secondary)
-                Text(DashboardFormatters.resetText(snapshot?.fiveHourWindow?.resetAt))
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
+                }
             }
             .font(.system(size: 14))
 
@@ -89,14 +103,9 @@ struct UsageDashboardView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("今日 Token")
                         .font(.system(size: 14, weight: .medium))
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(DashboardFormatters.tokenText(snapshot?.todayTokens))
-                            .font(.system(size: 24, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.blue)
-                        Text("/ 2.00M")
-                            .font(.system(size: 15))
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(DashboardFormatters.tokenText(snapshot?.todayTokens))
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.blue)
                 }
                 Spacer()
                 PercentRing(percent: snapshot?.fiveHourWindow?.remainingPercent)

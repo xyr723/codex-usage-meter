@@ -20,4 +20,7 @@ let package = Package(
         .testTarget(
             name: "CodexUsageMeterCoreTests",
             dependencies: ["CodexUsageMeterCore"]),
+        .testTarget(
+            name: "CodexUsageMeterAppTests",
+            dependencies: ["CodexUsageMeterApp"]),
     ])

@@ -72,8 +72,6 @@ struct FloatingBallRootView: View {
                 Spacer()
                 Text(DashboardFormatters.tokenText(snapshot?.todayTokens))
                     .fontWeight(.semibold)
-                Text("/ 2.00M")
-                    .foregroundStyle(.secondary)
             }
 
             HStack {

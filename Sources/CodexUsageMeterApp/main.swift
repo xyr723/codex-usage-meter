@@ -1,5 +1,10 @@
 import AppKit
 
+let singleInstanceLock = SingleInstanceLock()
+guard singleInstanceLock.acquire() else {
+    exit(0)
+}
+
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
