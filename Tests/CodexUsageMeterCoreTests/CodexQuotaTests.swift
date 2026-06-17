@@ -35,6 +35,34 @@ import Testing
     #expect(snapshot.todayTokens.totalTokens == 1_230_000)
 }
 
+@Test func codexQuotaDecoderAcceptsNumericResetTimestamps() throws {
+    let json = """
+    {
+      "rate_limit": {
+        "primary_window": {
+          "used_percent": 10,
+          "reset_at": 1781594410,
+          "limit_window_seconds": 18000
+        },
+        "secondary_window": {
+          "used_percent": 20,
+          "reset_at": 1782199200,
+          "limit_window_seconds": 604800
+        }
+      }
+    }
+    """.data(using: .utf8)!
+
+    let snapshot = try CodexQuotaDecoder.snapshot(
+        from: json,
+        todayTokens: TokenUsageSummary(inputTokens: 0, cachedInputTokens: 0, outputTokens: 0),
+        syncedAt: Date(timeIntervalSince1970: 1_781_568_000),
+        now: Date(timeIntervalSince1970: 1_781_568_000))
+
+    #expect(snapshot.fiveHourWindow?.resetAt == Date(timeIntervalSince1970: 1_781_594_410))
+    #expect(snapshot.weeklyWindow?.resetAt == Date(timeIntervalSince1970: 1_782_199_200))
+}
+
 @Test func codexQuotaRequestUsesExactUsageEndpoint() throws {
     let credentials = CodexCredentials(
         accessToken: "access-token",
@@ -72,4 +100,15 @@ import Testing
     ])
 
     #expect(endpoint.absoluteString == "https://proxy.example.test/backend-api/wham/usage")
+}
+
+@Test func httpProxyResolverReadsCodexProxyURL() throws {
+    let proxyURL = try #require(HTTPProxyResolver.proxyURL(environment: [
+        "CODEX_PROXY_URL": "http://127.0.0.1:7897",
+    ]))
+    let dictionary = HTTPProxyResolver.connectionProxyDictionary(proxyURL: proxyURL)
+
+    #expect(proxyURL.absoluteString == "http://127.0.0.1:7897")
+    #expect(dictionary[kCFNetworkProxiesHTTPProxy as String] as? String == "127.0.0.1")
+    #expect(dictionary[kCFNetworkProxiesHTTPPort as String] as? Int == 7897)
 }

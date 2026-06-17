@@ -64,6 +64,14 @@ final class UsageViewModel: ObservableObject {
         ProviderCatalog.descriptor(for: selectedProviderID)?.displayName ?? selectedProviderID.rawValue
     }
 
+    var selectedProviderIconName: String {
+        ProviderCatalog.descriptor(for: selectedProviderID)?.systemImageName ?? "sparkles"
+    }
+
+    var selectedProviderIsImplemented: Bool {
+        ProviderCatalog.descriptor(for: selectedProviderID)?.isImplemented ?? false
+    }
+
     func start() {
         refresh()
         timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in

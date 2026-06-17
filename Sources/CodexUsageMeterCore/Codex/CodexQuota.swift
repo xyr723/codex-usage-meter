@@ -129,7 +129,7 @@ private struct UsageWindow: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         usedPercent = try container.decodeFlexibleInt(forKey: .usedPercent)
-        resetAt = CodexDateParser.date(from: try container.decodeIfPresent(String.self, forKey: .resetAt))
+        resetAt = try container.decodeFlexibleOptionalDate(forKey: .resetAt)
         limitWindowSeconds = try container.decodeFlexibleOptionalInt(forKey: .limitWindowSeconds)
     }
 }
@@ -157,6 +157,25 @@ private extension KeyedDecodingContainer {
         }
         if let value = try? decode(String.self, forKey: key), let intValue = Int(value) {
             return intValue
+        }
+        return nil
+    }
+
+    func decodeFlexibleOptionalDate(forKey key: Key) throws -> Date? {
+        if let value = try? decode(Double.self, forKey: key) {
+            let seconds = value > 10_000_000_000 ? value / 1_000 : value
+            return Date(timeIntervalSince1970: seconds)
+        }
+        if let value = try? decode(Int.self, forKey: key) {
+            let seconds = value > 10_000_000_000 ? Double(value) / 1_000 : Double(value)
+            return Date(timeIntervalSince1970: seconds)
+        }
+        if let value = try? decode(String.self, forKey: key) {
+            if let numericValue = Double(value) {
+                let seconds = numericValue > 10_000_000_000 ? numericValue / 1_000 : numericValue
+                return Date(timeIntervalSince1970: seconds)
+            }
+            return CodexDateParser.date(from: value)
         }
         return nil
     }
