@@ -8,7 +8,6 @@ Codex Usage Meter 是一个原生 macOS 菜单栏应用，用于实时查看 Cod
 - 通过 Codex OAuth 凭据调用精确额度接口，不使用估算值。
 - 扫描本机 Codex JSONL 会话日志统计今日 token。
 - 提供按视觉原型实现的下拉详情面板。
-- 提供独立 UI 的悬浮球模式。
 - 提供 Apple Watch SwiftUI glance / complication 预留视图。
 - 通过 `UsageProvider` 预留 Claude Code 等其他 AI 工具 Provider 扩展接口。
 
@@ -73,7 +72,7 @@ CODEX_USAGE_URL="https://your-proxy.example/backend-api/wham/usage" swift run Co
 ## 模块
 
 - `CodexUsageMeterCore`: 精确额度、token 扫描、模型、格式化和 Provider 协议。
-- `CodexUsageMeterApp`: macOS 顶部栏、下拉详情面板和悬浮球 UI。
+- `CodexUsageMeterApp`: macOS 顶部栏和下拉详情面板。
 - `CodexUsageMeterWatch`: Apple Watch glance 和圆形/矩形复杂功能预留视图。
 
 ## UI 参考

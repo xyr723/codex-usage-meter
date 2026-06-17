@@ -3,7 +3,6 @@ import SwiftUI
 
 struct UsageDashboardView: View {
     @ObservedObject var viewModel: UsageViewModel
-    let toggleFloatingBall: () -> Void
 
     private var snapshot: ProviderUsageSnapshot? {
         viewModel.currentSnapshot
@@ -132,11 +131,6 @@ struct UsageDashboardView: View {
                     viewModel.refresh()
                 } label: {
                     Label(viewModel.isLoading ? "刷新中" : "刷新", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(DashboardButtonStyle())
-
-                Button(action: toggleFloatingBall) {
-                    Label("悬浮球", systemImage: "circle.dotted")
                 }
                 .buttonStyle(DashboardButtonStyle())
 

@@ -9,10 +9,7 @@ final class StatusBarController: NSObject {
     private let viewModel: UsageViewModel
     private var cancellable: AnyCancellable?
 
-    init(
-        viewModel: UsageViewModel,
-        toggleFloatingBall: @escaping () -> Void)
-    {
+    init(viewModel: UsageViewModel) {
         self.viewModel = viewModel
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         popover = NSPopover()
@@ -21,9 +18,7 @@ final class StatusBarController: NSObject {
         popover.behavior = .transient
         popover.contentSize = NSSize(width: 680, height: 294)
         popover.contentViewController = NSHostingController(
-            rootView: UsageDashboardView(
-                viewModel: viewModel,
-                toggleFloatingBall: toggleFloatingBall))
+            rootView: UsageDashboardView(viewModel: viewModel))
 
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "brain.head.profile", accessibilityDescription: "Codex")
